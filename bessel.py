@@ -20,12 +20,11 @@ COEFS = [[2.00],
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-f", "--freq", help="Set the cutoff frequency (MHz)", type=float)
+parser.add_argument("-f", "--freq", help="Set the cutoff frequency (MHz)", type=float, required=True)
 parser.add_argument("-bw", "--bandwidth", help="Set the bandwidth (MHz)", type=float)
-parser.add_argument("-t", "--type", help="Set the type of filter. [HP, LP, BP]", type=str)
-parser.add_argument("-o", "--order", help="Set the filter order", type=int)
-parser.add_argument("-r", "--resistance", help="Set the port resistance", type=float)
-
+parser.add_argument("-t", "--type", help="Set the type of filter. [HP, LP, BP]", type=str, required=True)
+parser.add_argument("-o", "--order", help="Set the filter order", type=int, required=True)
+parser.add_argument("-r", "--resistance", help="Set the port resistance", type=float, default = 50.00) 
 args = parser.parse_args()
 
 f = args.freq
@@ -56,13 +55,13 @@ def hpc(L, R, F):
     # Return the high pass cap value
     return 1 / (2 * math.pi * F * R * L)
 
-def bpslc(Fh, Fl, R, L):
+def bpplc(Fh, Fl, R, L):
     # return the parallel L & C values
     Cp = (Fh - Fl)/(2 * math.pi * Fh * Fl * R * L)
     Lp = (R * L) / (2 * math.pi * (Fh - Fl))
     return (Cp,Lp)
 
-def bpplc(Fh, Fl, R, C):
+def bpslc(Fh, Fl, R, C):
     # Return the series L & C values
     Cs = C / (2 * math.pi * (Fh - Fl) * R)
     Ls = ((Fh - Fl) * R) / (2 * math.pi * Fh * Fl * C)
@@ -70,8 +69,6 @@ def bpplc(Fh, Fl, R, C):
 
 
 def lp_filter(F, R, Cn, Ln):    
-    print 'lp_filter:'
-    print F, R, Cn, Ln
     inductors = []
     for l in Ln:
 	inductors.append(lpl(l, R, F))
@@ -92,7 +89,12 @@ def hp_filter(F, R, Cn, Ln):
     return inductors, capacitors
 
 def bp_filter(Fh, Fl, R, Cn, Ln):
-    pass
+    parallel_LC = []
+    series_LC = []
+    for L in Ln:
+	parallel_LC.append(bpplc(Fh, Fl, R, L))
+    for C in Cn:
+	series_LC.append(bpslc(Fh, Fl, R, C))
 
 
 
@@ -100,16 +102,13 @@ def denorm(cut, res, order, ftype, coeffs):
     Cn = coeffs[0:][::2]
     Ln = coeffs[1:][::2]
     
-    print 'denorm:'
-    print cut, res, order, ftype, Cn, Ln
-    
     ftype = ftype.lower()
     if 'lp' in ftype:
 	print lp_filter(cut, res, Cn, Ln)
     elif 'hp' in ftype:
-	hp_filter()
+	hp_filter(cut, res, Cn, Ln)
     elif 'bp' in ftype:
-	bp_filter()
+	bp_filter(fh, fl, res, Cn, Ln)
     else:
 	raise Exception("Unsuported Filter Type!!!")
 
