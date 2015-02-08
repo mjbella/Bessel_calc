@@ -96,9 +96,10 @@ def bp_filter(Fh, Fl, R, Cn, Ln):
     for C in Cn:
 	series_LC.append(bpslc(Fh, Fl, R, C))
 
-
+    return parallel_LC, series_LC
 
 def denorm(cut, res, order, ftype, coeffs):
+    pdb.set_trace()
     Cn = coeffs[0:][::2]
     Ln = coeffs[1:][::2]
     
@@ -108,7 +109,7 @@ def denorm(cut, res, order, ftype, coeffs):
     elif 'hp' in ftype:
 	hp_filter(cut, res, Cn, Ln)
     elif 'bp' in ftype:
-	bp_filter(fh, fl, res, Cn, Ln)
+	print bp_filter(fh, fl, res, Cn, Ln)
     else:
 	raise Exception("Unsuported Filter Type!!!")
 
