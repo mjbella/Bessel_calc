@@ -33,8 +33,9 @@ ftype = args.type
 order = args.order
 r = args.resistance
 
-fl = f - bw/2
-fh = f + bw/2
+if bw:
+    fl = f - bw/2
+    fh = f + bw/2
 
 coef = COEFS[order-1]
 
@@ -67,16 +68,18 @@ def bpslc(Fh, Fl, R, C):
     Ls = ((Fh - Fl) * R) / (2 * math.pi * Fh * Fl * C)
     return (Cs,Ls)
 
-
+# Calculate full sequences of component values (for a set of values from the table above) for a filter.
 def lp_filter(F, R, Cn, Ln):    
-    inductors = []
-    for l in Ln:
-	inductors.append(lpl(l, R, F))
-    capacitors = []
-    for c in Cn:
-	capacitors.append(lpc(c, R, F))
+    parts = {}
+    for i, l in enumerate(Ln):
+	ref = "L%d"%(i+1)
+	parts[ref] = lpl(l, R, F)
+    
+    for i, c in enumerate(Cn):
+	ref = "C%d"%(i+1)
+	parts[ref] = lpc(c, R, F)
 
-    return inductors, capacitors
+    return parts
 
 def hp_filter(F, R, Cn, Ln):
     inductors = []
@@ -98,6 +101,7 @@ def bp_filter(Fh, Fl, R, Cn, Ln):
 
     return parallel_LC, series_LC
 
+# Run the denormalization process for high pass, low pass, or band pass.
 def denorm(cut, res, order, ftype, coeffs):
     pdb.set_trace()
     Cn = coeffs[0:][::2]
