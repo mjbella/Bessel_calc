@@ -107,36 +107,69 @@ def bp_filter(Fh, Fl, R, Cn, Ln):
     ''' Calculate all the component values for a bandpass filter '''
     parts = {}
     for i, L in enumerate(Ln):
-	cref = "Cp%d" % ((i*2)+1)
-	lref = "Lp%d" % ((i*2)+1)
+	cref = "Cp%d" % (i+1)
+	lref = "Lp%d" % (i+1)
 	a, b, = bpplc(Fh, Fl, R, L)
 	parts[cref] = a
 	parts[lref] = b
 
     for i, C in enumerate(Cn):
-	cref = "Cs%d" % ((i*2)+1)
-	lref = "Ls%d" % ((i*2)+1)
+	cref = "Cs%d" % (i+1)
+	lref = "Ls%d" % (i+1)
 	a, b = bpslc(Fh, Fl, R, C)
 	parts[cref] = a
 	parts[lref] = b
 	
     return parts
 
+def siprint(refdes, value):
+    frmt = '%.2f'
+    print refdes, ' ', 
+    if 'c' in refdes[0].lower():
+	if (value < 1E-6) & (value > 1E-9):
+	    print frmt%(value*1E9), 'nF'
+	elif (value <= 1E-9):
+	    print frmt%(value*1E12), 'pF'
+	else:
+	    print frmt%(value), 'F'
+
+    if 'l' in refdes[0].lower():
+	if (value < 1E-3) & (value > 1E-6):
+	    print frmt%(value*1E6), 'uH'
+	elif (value <= 1E-6):
+	    print frmt%(value*1E9), 'nH'
+	else:
+	    print frmt%(value), 'H'
+    
+    
+
+def printLCs(parts):
+    assert isinstance(parts, dict), "The parts list needs to be a dictionary!!"
+    print 
+    for refdes, value in sorted(parts.items()):
+	siprint(refdes, value)
+
+
 # Run the denormalization process for high pass, low pass, or band pass.
 def denorm(cut, res, order, ftype, coeffs):
-    pdb.set_trace()
     Cn = coeffs[0:][::2]
     Ln = coeffs[1:][::2]
     
     ftype = ftype.lower()
     if 'lp' in ftype:
-	print lp_filter(cut, res, Cn, Ln)
+	result =  lp_filter(cut, res, Cn, Ln)
+	filter_type = 'Low Pass Filter'
     elif 'hp' in ftype:
-	hp_filter(cut, res, Cn, Ln)
+	result = hp_filter(cut, res, Cn, Ln)
+	filter_type = 'High Pass Filter'
     elif 'bp' in ftype:
-	print bp_filter(fh, fl, res, Cn, Ln)
+	result = bp_filter(fh, fl, res, Cn, Ln)
+	filter_type = 'Band Pass Filter'
     else:
 	raise Exception("Unsuported Filter Type!!!")
-
-
+    
+    print filter_type+':'
+    printLCs(result)
+    
+    
 denorm(f, r, order, ftype, coef)
