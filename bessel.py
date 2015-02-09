@@ -171,4 +171,5 @@ def denorm(cut, res, order, ftype, coeffs):
     print filter_type+':'
     printLCs(result)
 
-denorm(f, r, order, ftype, coef)
+if __name__ == "__main__":
+    denorm(f, r, order, ftype, coef)
