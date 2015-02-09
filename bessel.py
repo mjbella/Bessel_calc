@@ -123,24 +123,27 @@ def bp_filter(Fh, Fl, R, Cn, Ln):
     return parts
 
 def siprint(refdes, value):
-    frmt = '%.2f'
+    frmt = '%.4f'
     print refdes, ' ',
     if 'c' in refdes[0].lower():
-        if (value < 1E-6) & (value > 1E-9):
-            print frmt%(value*1E9), 'nF'
-        elif (value <= 1E-9):
+        if value <= 1E-9:
             print frmt%(value*1E12), 'pF'
+        elif value < 1E-6:
+            print frmt%(value*1E9), 'nF'
+        elif value < 1E-3:
+            print frmt%(value*1E6), 'mF'
         else:
             print frmt%(value), 'F'
 
     if 'l' in refdes[0].lower():
-        if (value < 1E-3) & (value > 1E-6):
-            print frmt%(value*1E6), 'uH'
-        elif (value <= 1E-6):
+        if value <= 1E-9:
+            print frmt%(value*1E12), 'pH'
+        elif value < 1E-6:
             print frmt%(value*1E9), 'nH'
+        elif value < 1E-3:
+            print frmt%(value*1E6), 'mH'
         else:
             print frmt%(value), 'H'
-
 
 
 def printLCs(parts):
