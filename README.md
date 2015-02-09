@@ -1,8 +1,7 @@
 # bessel_calc
 
-Calculate component values to make an LC lowpass, highpass, or bandpass filter,
-using precomputed normalized values from
-[rfcafe] [rfcafe] .
+Calculate component values for lowpass, highpass, and bandpass filters from
+precomputed normalized values (source: [rfcafe][rfcafe]).
 
 This script may produce component values that are either too low or too high
 to be usable depending on the input requirements.
