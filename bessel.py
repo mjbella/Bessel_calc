@@ -167,6 +167,23 @@ def lowpassValues(order=1, frequency=1.0, load=50.0):
     cutoff = frequency * 1e6 # convert MHz to Hz
     return lp_filter(cutoff, load, Cn, Ln)
 
+def highpassValues(order=1, frequency=1.0, load=50.0):
+    """ Return component values for given highpass filter as dict.
+    frequency is given in MHz, load is given in Ohms
+    """
+    Cn, Ln = orderCoefs(order)
+    cutoff = frequency * 1e6 # convert MHz to Hz
+    return lp_filter(cutoff, load, Cn, Ln)
+
+def bandpassValues(order=1, frequency=1.0, bandwidth=1.0, load=50.0):
+    """ Return component values for given bandpass filter as dict.
+    frequency and bandwidth is given in MHz, load is given in Ohms
+    """
+    Cn, Ln = orderCoefs(order)
+    center = frequency * 1e6 # convert MHz to Hz
+    bw     = bandwidth * 1e6 # convert MHz to Hz
+    return bp_filter(center, bw, load, Cn, Ln)
+
 def getValues(ftype='lowpass', order=1, frequency=1.0,
         bandwidth=None, load=50.0):
     """ Return component values for given bessel filter as dictionary.
