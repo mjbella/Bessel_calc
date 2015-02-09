@@ -15,6 +15,13 @@ COEFS = [[2.00],
          [0.0780,0.2313,0.3770,0.5108,0.6306,0.7407,0.8639,1.0863,2.2649],
          [0.0672,0.1998,0.3270,0.4454,0.5528,0.6493,0.7420,0.8561,1.0781,2.2641]]
 
+def orderCoefs(order):
+    """ Return order coefficient lists in a tuple for (Cn, Ln) """
+    coeffs = COEFS[order-1]
+    Cn = coeffs[0:][::2]
+    Ln = coeffs[1:][::2]
+    return Cn, Ln
+
 # input the normalized values, output the denormalized values for L&C
 def lpl(L, R, F):
     ''' Lowpass inductors
@@ -128,12 +135,9 @@ def printLCs(parts):
     for refdes, value in sorted(parts.items()):
         siprint(refdes, value)
 
-
 # Run the denormalization process for high pass, low pass, or band pass.
 def denorm(cut, res, order, ftype, bw=None):
-    coeffs = COEFS[order-1]
-    Cn = coeffs[0:][::2]
-    Ln = coeffs[1:][::2]
+    Cn, Ln = orderCoefs(order)
 
     ftype = ftype.lower()
     if 'lp' in ftype:
@@ -146,10 +150,37 @@ def denorm(cut, res, order, ftype, bw=None):
         result = bp_filter(cut, bw, res, Cn, Ln)
         filter_type = 'Band Pass Filter'
     else:
-        raise Exception("Unsuported Filter Type!!!")
+        raise ValueError("Unsuported Filter Type!!!")
 
     print filter_type+':'
     printLCs(result)
+
+def lowpassValues(order=1, frequency=1.0, load=50.0):
+    """ Return component values for given lowpass filter as dict.
+    frequency is given in MHz, load is given in Ohms
+    """
+    Cn, Ln = orderCoefs(order)
+    return lp_filter(frequency, load, Cn, Ln)
+
+def getValues(ftype='lowpass', order=1, frequency=1.0,
+        bandwidth=None, load=50.0):
+    """ Return component values for given bessel filter as dictionary.
+
+    ftype - Filter type ['lowpass', 'highpass', 'bandpass']
+    order - Filter order [1 through 10]
+    frequency - design frequency (center for bandpass) <MHz>
+    bandwidth - width of passband for bandpass filters <MHz>
+    load - load resistance <Ohm>
+    """
+    if ftype == 'lowpass':
+        return lowpassValues(order=order, frequency=frequency, load=load)
+    elif ftype == 'highpass':
+        return highpassValues(order=order, frequency=frequency, load=load)
+    elif ftype == 'bandpass':
+        return bandpassValues(order=order, frequency=frequency,
+                bandwidth=bandwidth, load=load)
+    else:
+        raise ValueError("Unsuported filter type: %s" % ftype)
 
 if __name__ == "__main__":
     import argparse
