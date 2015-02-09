@@ -1,9 +1,6 @@
 #!/usr/bin/env python
-
-import sys
-import math
-import argparse
-import pdb
+# bessel.py - calculate bessel filter component values
+import math, pdb, sys
 
 # !!!!!! MAGIC NUMBERS !!!!!!
 # Normalized for 1ohm and 1 rad/sec
@@ -17,29 +14,6 @@ COEFS = [[2.00],
          [0.0919,0.2719,0.4409,0.5936,0.7303,0.8695,1.0956,2.2656],
          [0.0780,0.2313,0.3770,0.5108,0.6306,0.7407,0.8639,1.0863,2.2649],
          [0.0672,0.1998,0.3270,0.4454,0.5528,0.6493,0.7420,0.8561,1.0781,2.2641]]
-
-parser = argparse.ArgumentParser()
-
-parser.add_argument("-f", "--freq", help="Set the cutoff frequency (MHz)", type=float, required=True)
-parser.add_argument("-bw", "--bandwidth", help="Set the bandwidth (MHz)", type=float)
-parser.add_argument("-t", "--type", help="Set the type of filter. [HP, LP, BP]", type=str, required=True)
-parser.add_argument("-o", "--order", help="Set the filter order", type=int, required=True)
-parser.add_argument("-r", "--resistance", help="Set the port resistance", type=float, default = 50.00)
-args = parser.parse_args()
-
-f = args.freq
-bw = args.bandwidth
-ftype = args.type
-order = args.order
-r = args.resistance
-
-if bw:
-    fl = f - bw/2
-    fh = f + bw/2
-else:
-    print "Bandwidth not given! No bandpass filter for you!"
-
-coef = COEFS[order-1]
 
 # input the normalized values, output the denormalized values for L&C
 def lpl(L, R, F):
@@ -103,8 +77,10 @@ def hp_filter(F, R, Cn, Ln):
 
     return parts
 
-def bp_filter(Fh, Fl, R, Cn, Ln):
+def bp_filter(F, Bw, R, Cn, Ln):
     ''' Calculate all the component values for a bandpass filter '''
+    Fl = F - Bw/2.0 # Low frequency of passband
+    Fh = F + Bw/2.0 # High frequency of passband
     parts = {}
     for i, L in enumerate(Ln):
         cref = "Cp%d" % (i+1)
@@ -154,7 +130,8 @@ def printLCs(parts):
 
 
 # Run the denormalization process for high pass, low pass, or band pass.
-def denorm(cut, res, order, ftype, coeffs):
+def denorm(cut, res, order, ftype, bw=None):
+    coeffs = COEFS[order-1]
     Cn = coeffs[0:][::2]
     Ln = coeffs[1:][::2]
 
@@ -166,7 +143,7 @@ def denorm(cut, res, order, ftype, coeffs):
         result = hp_filter(cut, res, Cn, Ln)
         filter_type = 'High Pass Filter'
     elif 'bp' in ftype:
-        result = bp_filter(fh, fl, res, Cn, Ln)
+        result = bp_filter(cut, bw, res, Cn, Ln)
         filter_type = 'Band Pass Filter'
     else:
         raise Exception("Unsuported Filter Type!!!")
@@ -175,4 +152,24 @@ def denorm(cut, res, order, ftype, coeffs):
     printLCs(result)
 
 if __name__ == "__main__":
-    denorm(f, r, order, ftype, coef)
+    import argparse
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-f", "--freq", help="Set the cutoff frequency (MHz)", type=float, required=True)
+    parser.add_argument("-bw", "--bandwidth", help="Set the bandwidth (MHz)", type=float)
+    parser.add_argument("-t", "--type", help="Set the type of filter. [HP, LP, BP]", type=str, required=True)
+    parser.add_argument("-o", "--order", help="Set the filter order", type=int, required=True)
+    parser.add_argument("-r", "--resistance", help="Set the port resistance", type=float, default = 50.00)
+    args = parser.parse_args()
+
+    f = args.freq
+    bw = args.bandwidth
+    ftype = args.type
+    order = args.order
+    r = args.resistance
+
+    if bw: # bandwidth is set
+        denorm(f, r, order, ftype, bw=bw)
+    else:
+        denorm(f, r, order, ftype)
