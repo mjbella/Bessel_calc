@@ -114,7 +114,9 @@ def siprint(refdes, value):
         elif value < 1E-6:
             print frmt%(value*1E9), 'nF'
         elif value < 1E-3:
-            print frmt%(value*1E6), 'mF'
+            print frmt%(value*1E6), 'uF'
+        elif value < 1:
+            print frmt%(value*1E3), 'mF'
         else:
             print frmt%(value), 'F'
 
@@ -124,7 +126,9 @@ def siprint(refdes, value):
         elif value < 1E-6:
             print frmt%(value*1E9), 'nH'
         elif value < 1E-3:
-            print frmt%(value*1E6), 'mH'
+            print frmt%(value*1E6), 'uH'
+        elif value < 1:
+            print frmt%(value*1E3), 'mH'
         else:
             print frmt%(value), 'H'
 
