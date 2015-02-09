@@ -1,7 +1,7 @@
 # bessel_calc
 
 This python script uses precomputed normalized values from
-http://www.rfcafe.com/references/electrical/bessel-proto-values.htm
+[rfcafe](http://www.rfcafe.com/references/electrical/bessel-proto-values.htm)
 to calculate the required component values to make an LC lowpass, highpass,
 or bandpass filter.
 
