@@ -164,7 +164,25 @@ def lowpassValues(order=1, frequency=1.0, load=50.0):
     frequency is given in MHz, load is given in Ohms
     """
     Cn, Ln = orderCoefs(order)
-    return lp_filter(frequency, load, Cn, Ln)
+    cutoff = frequency * 1e6 # convert MHz to Hz
+    return lp_filter(cutoff, load, Cn, Ln)
+
+def highpassValues(order=1, frequency=1.0, load=50.0):
+    """ Return component values for given highpass filter as dict.
+    frequency is given in MHz, load is given in Ohms
+    """
+    Cn, Ln = orderCoefs(order)
+    cutoff = frequency * 1e6 # convert MHz to Hz
+    return lp_filter(cutoff, load, Cn, Ln)
+
+def bandpassValues(order=1, frequency=1.0, bandwidth=1.0, load=50.0):
+    """ Return component values for given bandpass filter as dict.
+    frequency and bandwidth is given in MHz, load is given in Ohms
+    """
+    Cn, Ln = orderCoefs(order)
+    center = frequency * 1e6 # convert MHz to Hz
+    bw     = bandwidth * 1e6 # convert MHz to Hz
+    return bp_filter(center, bw, load, Cn, Ln)
 
 def getValues(ftype='lowpass', order=1, frequency=1.0,
         bandwidth=None, load=50.0):
@@ -198,8 +216,8 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--resistance", help="Set the port resistance", type=float, default = 50.00)
     args = parser.parse_args()
 
-    f = args.freq
-    bw = args.bandwidth
+    f = args.freq * 1e6 # convert MHz to Hz
+    bw = args.bandwidth * 1e6 # convert MHz to Hz
     ftype = args.type
     order = args.order
     r = args.resistance
