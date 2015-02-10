@@ -105,6 +105,18 @@ def bp_filter(F, Bw, R, Cn, Ln):
 
     return parts
 
+def toosmall(parts):
+    ''' If any of the parts in the list are too small return true! '''
+    for refdes, value in parts.items():
+        if ('c' in refdes[0].lower()) and (value < 1E-12):
+            return True
+        elif ('l' in refdes[0].lower()) and (value < 2E-9):
+            return True
+
+    return False
+
+
+
 def siprint(refdes, value):
     frmt = '%.4f'
     print refdes, ' ',
@@ -153,6 +165,11 @@ def denorm(cut, res, order, ftype, bw=None):
     elif 'bp' in ftype:
         result = bp_filter(cut, bw, res, Cn, Ln)
         filter_type = 'Band Pass Filter'
+        if toosmall(result):
+            print "Maybe try building a lowpass filter and highpass filter in series instead!"
+            denorm(cut+bw, res, order, 'lp')
+            denorm(cut-bw, res, order, 'hp')
+            return
     else:
         raise ValueError("Unsuported Filter Type!!!")
 
@@ -217,7 +234,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     f = args.freq * 1e6 # convert MHz to Hz
-    bw = args.bandwidth * 1e6 # convert MHz to Hz
+    if args.bandwidth:
+        bw = args.bandwidth * 1e6 # convert MHz to Hz
+    else:
+        bw = None
     ftype = args.type
     order = args.order
     r = args.resistance
