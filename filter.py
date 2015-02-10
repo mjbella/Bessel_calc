@@ -19,8 +19,15 @@ def prettyVal( value, key=None):
         s = frmt % (value, ' ')
 
     if key is not None: # Add unit suffix if given unit
-        if   key[0] == 'C': s += 'F' # Capacitors have units Farads
-        elif key[0] == 'L': s += 'H' # Inductors have units Henries
+        if key[0] == 'C':
+            s += 'F' # Capacitors have units Farads
+            if value < 1e-12 or value > 1e-3:
+                s += ' BAD!' # outside of reasonable capacitors
+        elif key[0] == 'L':
+            s += 'H' # Inductors have units Henries
+            if value < 1e-12 or value > 1e-3:
+                s += ' BAD!' # outside of reasonable henries
+
     return s
 
 def getValues( response='bessel', ftype='lowpass', order=1,
